@@ -1,14 +1,17 @@
--module(s1_2_server).
-
+-module(s1_3_parallel_server).
 -export([start_nano_server/0]).
 
 start_nano_server() ->
 	{ok,Listen} = gen_tcp:listen(2345,[binary,{packet,4},
 						{reuseaddr,true},
 						{active,true}]),
+	spawn(fun() -> par_connect(Listen) end).
+
+par_connect(Listen) ->
 	{ok,Socket} = gen_tcp:accept(Listen),
-	gen_tcp:close(Listen),
+	spawn(fun() -> par_connect(Listen) end),
 	loop(Socket).
+	
 
 loop(Socket) ->
 	receive
@@ -34,3 +37,6 @@ string2value(Str) ->
     %% 运行表达式
     {value, Value, _} = erl_eval:exprs(Exprs, Bindings),
     Value.
+
+
+%% 使用 s1_2_client 发起请求

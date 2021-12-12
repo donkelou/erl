@@ -1,18 +1,18 @@
--module(s1_2_server).
+-module(s2_2_server).
 
 -export([start_nano_server/0]).
 
 start_nano_server() ->
 	{ok,Listen} = gen_tcp:listen(2345,[binary,{packet,4},
 						{reuseaddr,true},
-						{active,true}]),
+						{active,false}]),
 	{ok,Socket} = gen_tcp:accept(Listen),
 	gen_tcp:close(Listen),
 	loop(Socket).
 
 loop(Socket) ->
-	receive
-		{tcp,Socket,Bin} ->
+	case gen_tcp:recv(Socket,N) of
+		{ok,Bin} ->
 			io:format("Server received binary = ~p~n",[Bin]),
 			Str = binary_to_term(Bin),
 			io:format("Server [unpacket] = ~p~n",[Str]),
